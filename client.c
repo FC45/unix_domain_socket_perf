@@ -22,14 +22,8 @@ int main ()
 	/* Initialization */
 	memset(&addr, 0, sizeof(addr));
 	addr.sun_family = AF_UNIX;
-	unlink(SOCKET_NAME);
 
 	strncpy(addr.sun_path, SOCKET_NAME, sizeof(addr.sun_path)-1);
-	if (bind(fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
-		fprintf(stderr, "bind error: %s", strerror(errno));
-		return errno;
-	}
-
 	if (connect(fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
 		fprintf(stderr, "connect error: %s", strerror(errno));
 		return errno;
@@ -39,8 +33,8 @@ int main ()
 		if ((wr = write(fd, buf, BUF_SIZE)) != BUF_SIZE) {
 			if (wr > 0) {
 				fprintf(stderr, "listen error: %s", strerror(errno));
-			} else if (rd == 0) {
-				close(ac);
+			} else {
+				close(fd);
 				fprintf(stderr, "write error: %s", strerror(errno));
 				return errno;
 			}
