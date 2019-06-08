@@ -10,7 +10,7 @@
 
 int main ()
 {
-	int fd, ac, rd, i;
+	int fd, ac, wr, rd, i, sum;
 	char buf[BUF_SIZE];
 	struct sockaddr_un addr;
 
@@ -35,22 +35,33 @@ int main ()
 		return errno;
 	}
 
-	for (i = 0; i < 1024; i++) {    
-		if ((ac = accept(fd, NULL, NULL)) == -1) {
-			fprintf(stderr, "listen error: %s", strerror(errno));
-			return errno;
+	if ((ac = accept(fd, NULL, NULL)) == -1) {
+		fprintf(stderr, "listen error: %s", strerror(errno));
+		return errno;
+	}
+	for (i = 0; i < 1024; ++i) {
+		sum = 0;
+		while (sum < BUF_SIZE && (rd = read(ac, buf, sizeof(buf))) > 0) {
+			sum += rd;
+			fprintf(stderr, "server: read %u bytes\n", rd);
 		}
-
-		while ((rd = read(ac, buf, sizeof(buf))) > 0)
-      			fprintf(stderr, "read %u bytes\n", rd);
 
 		if (rd == -1) {
 			fprintf(stderr, "listen error: %s", strerror(errno));
 			return errno;
-		} else if (rd == 0) {
-			close(ac);
+		}
+
+		if ((wr = write(ac, buf, BUF_SIZE)) != BUF_SIZE) {
+			if (wr > 0) {
+				fprintf(stderr, "listen error: %s", strerror(errno));
+			} else {
+				close(fd);
+				fprintf(stderr, "write error: %s", strerror(errno));
+				return errno;
+			}
 		}
 	}
+	close(ac);
 
 	return 0;
 }

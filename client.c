@@ -10,7 +10,7 @@
 
 int main ()
 {
-	int fd, wr, i;
+	int fd, wr, rd, i, sum;
 	char buf[BUF_SIZE] = { 1 };
 	struct sockaddr_un addr;
 
@@ -38,6 +38,17 @@ int main ()
 				fprintf(stderr, "write error: %s", strerror(errno));
 				return errno;
 			}
+		}
+
+		sum = 0;
+		while (sum < BUF_SIZE && (rd = read(fd, buf, sizeof(buf))) > 0) {
+			sum += rd;
+			fprintf(stderr, "client: read %u bytes\n", rd);
+		}
+
+		if (rd == -1) {
+			fprintf(stderr, "listen error: %s", strerror(errno));
+			return errno;
 		}
 	}
 

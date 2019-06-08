@@ -1,0 +1,9 @@
+It's a simple performance evalution for unix domain socket by ping-pong nonzero data
+
+build:
+
+make
+
+execute:
+
+./run.sh
